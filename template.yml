@@ -1,0 +1,32 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Resources:
+
+  MyHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: dev
+      Auth:
+        DefaultAuthorizer: JWTTokenExample
+        Authorizers:
+          JWTTokenExample:
+            JwtConfiguration:
+              issuer: "https://dev-m95h-0ze.us.auth0.com/"
+              audience:
+                - "https://lnwa7z270c.execute-api.us-west-1.amazonaws.com"
+            IdentitySource: "$request.header.Authorization"
+
+  HelloFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: handler.hello
+      Runtime: nodejs12.x
+      CodeUri: ./hello
+      Events:
+        HelloAPI:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref MyHttpApi
+            Path: /hello
+            Method: GET
